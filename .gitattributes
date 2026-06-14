@@ -1,0 +1,10 @@
+# Theme files contain raw binary (embedded JPEG wallpaper / zip). Never let git
+# normalize line endings or try to diff/merge them — that would corrupt the image.
+*.attheme         binary
+*.tdesktop-theme  binary
+*.tgios-theme     binary
+
+# Images
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
