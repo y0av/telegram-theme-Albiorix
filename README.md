@@ -26,11 +26,15 @@ Design principles:
 
 ## ✦ Preview
 
-| Chat | Palette |
-| :--: | :--: |
-| ![chat preview](assets/preview.png) | ![palette](assets/palette.png) |
+![Albiorix running on Telegram Desktop](assets/screenshot.png)
 
-> The preview is rendered directly from the real theme colors (`build/preview.py`) — what you see is what you get.
+<sub>Albiorix on Telegram Desktop — the real thing.</sub>
+
+| Mobile mock-up | Palette |
+| :--: | :--: |
+| ![mobile mock-up](assets/preview.png) | ![palette](assets/palette.png) |
+
+> The mobile mock-up is rendered directly from the real theme colors (`build/preview.py`) — what you see is what you get.
 
 ## ✦ Install
 
