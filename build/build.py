@@ -168,6 +168,19 @@ def build_desktop(background_jpg):
 # ───────────────────────── ANDROID ─────────────────────────────────────────
 ACCENT_RGB = parse6(hx("accent"))
 TEAL_H = rgb_to_hls(*ACCENT_RGB)[0]   # hue of our aurora teal
+COOL_H = 0.61                          # indigo hue for tinted neutrals
+
+# Role of a key, decided by name, to pick the light<->dark direction.
+FG_RE = re.compile(
+    r"(text|title|name|hint|icon|link|fg|message|subtitle|caption|"
+    r"placeholder|cursor|value|check|arrow|drawable|search$)", re.I)
+BG_RE = re.compile(
+    r"(background|bubble|panel|listview|view|field|cell|row|sheet|menu|"
+    r"tabbar|gradient|overlay|selector|fill|track|circle|emptyview|"
+    r"container|counter|badge)", re.I)
+
+def chroma(r, g, b):
+    return (max(r, g, b) - min(r, g, b)) / 255.0
 
 def to_teal_keepL(r, g, b):
     """Recolour a (blue) accent to teal, preserving perceived lightness."""
@@ -175,31 +188,33 @@ def to_teal_keepL(r, g, b):
     s = min(max(s, 0.45), 0.78)
     return hls_to_rgb(TEAL_H, l, s)
 
-def invert_neutral(r, g, b):
-    """Map a near-neutral light colour to its dark-theme counterpart."""
+def neutral_to_dark(name, r, g, b):
+    """Neutral light->dark, direction chosen by the key's role."""
     h, l, s = rgb_to_hls(r, g, b)
-    nl = 1.0 - l
-    nl = 0.045 + nl * 0.885           # into [0.045, 0.93]
-    if nl < 0.34:                     # surfaces: subtle cool indigo tint
-        tint = 0.16 * (1 - nl / 0.34)
-        return hls_to_rgb(0.61, nl, tint)
-    if nl > 0.62:                     # text: cool off-white
-        return hls_to_rgb(0.60, nl, 0.06)
-    return hls_to_rgb(0.60, nl, 0.10)
+    is_fg, is_bg = bool(FG_RE.search(name)), bool(BG_RE.search(name))
+    if is_fg and not is_bg:                 # foreground -> light, cool off-white
+        nl = 0.60 + (1.0 - l) * 0.32        #   darker source = brighter text
+        return hls_to_rgb(COOL_H, min(nl, 0.95), 0.06)
+    if is_bg and not is_fg:                  # surface -> dark indigo
+        nl = 0.05 + l * 0.12                 #   lighter source = slightly raised
+        return hls_to_rgb(COOL_H, nl, 0.15 * (1 - nl / 0.17))
+    # ambiguous: invert around mid by source lightness
+    nl = 0.045 + (1.0 - l) * 0.885
+    tint = 0.06 if nl > 0.55 else 0.13 * (1 - min(nl, 0.13) / 0.13 + 0.2)
+    return hls_to_rgb(COOL_H, nl, max(0.04, tint))
 
 def transform(name, a, r, g, b):
     """Light default colour -> Albiorix dark colour (rgb only; alpha kept)."""
-    lname = name.lower()
     if a == 0:                                    # fully transparent: keep
         return r, g, b
-    if "shadow" in lname:                         # shadows stay dark
+    if "shadow" in name.lower():                  # shadows stay dark
         return parse6(hx("bgDeep"))
     h, l, s = rgb_to_hls(r, g, b)
-    is_blue = s > 0.20 and 0.50 <= h <= 0.70 and 0.20 < l < 0.93
-    if is_blue:
-        return to_teal_keepL(r, g, b)
-    if s < 0.20:                                  # neutral / grey
-        return invert_neutral(r, g, b)
+    ch = chroma(r, g, b)
+    if ch > 0.12 and 0.50 <= h <= 0.70 and 0.18 < l < 0.95:
+        return to_teal_keepL(r, g, b)             # Telegram blue -> aurora teal
+    if ch < 0.12:                                 # neutral / grey
+        return neutral_to_dark(name, r, g, b)
     return r, g, b                                # strong hue (red/green/gold)
 
 # Precise brand overrides. Value = palette token, ('token'|'hex6', alpha), or hex6.
@@ -232,12 +247,8 @@ ANDROID_OVERRIDES = {
     "windowBackgroundWhiteBlueHeader": A,
     "windowBackgroundWhiteBlueButton": A,
     "windowBackgroundWhiteBlueIcon": A,
-    "windowBackgroundWhiteRedText": "red",
-    "windowBackgroundWhiteRedText2": "red",
-    "windowBackgroundWhiteRedText3": "red",
-    "windowBackgroundWhiteRedText4": "redDim",
-    "windowBackgroundWhiteRedText5": "red",
-    "windowBackgroundWhiteRedText6": "red",
+    "text_RedRegular": "red",
+    "text_RedBold": "red",
     "windowBackgroundWhiteGreenText": "green",
     "windowBackgroundWhiteGreenText2": "green",
     "windowBackgroundWhiteInputField": "border",
@@ -251,10 +262,10 @@ ANDROID_OVERRIDES = {
     "switchTrackBlueChecked": AF,
     "switch2Track": "border",
     "switch2TrackChecked": AF,
-    "switchThumb": "text",
-    "switchThumbChecked": "onAccent",
+    "switchTrackBlueThumb": "text",
+    "switchTrackBlueThumbChecked": "onAccent",
     "divider": "border",
-    "listSelectorSDK21": ("ffffff", 0x14),
+    "listSelector": ("ffffff", 0x14),
     "graySection": "bgDeep",
     "graySectionText": "textSub",
     "fastScrollActive": A,
@@ -299,7 +310,6 @@ ANDROID_OVERRIDES = {
     "chats_nameMessage_threeLines": "text",
     "chats_draft": "red",
     "chats_date": "textDim",
-    "chats_nameIcon": "text",
     "chats_pinnedIcon": "textSub",
     "chats_pinnedOverlay": ("surface2", 0xff),
     "chats_unreadCounter": AF,
@@ -452,7 +462,6 @@ ANDROID_OVERRIDES = {
     "chat_emojiPanelShadowLine": "border",
     "chat_emojiBottomPanelIcon": "textSub",
     "chat_goDownButton": "surface2",
-    "chat_goDownButtonIcon": "text",
     "chat_goDownButtonCounter": "onAccent",
     "chat_goDownButtonCounterBackground": AF,
     "chat_messagePanelCancelInlineBot": "textSub",
@@ -502,7 +511,6 @@ ANDROID_OVERRIDES = {
     "dialogLinkSelection": (A, 0x33),
     "dialogTextBlue": A,
     "dialogTextBlue2": A,
-    "dialogTextBlue3": A,
     "dialogTextBlue4": A,
     "dialogTextGray": "textSub",
     "dialogTextGray2": "textSub",
@@ -510,9 +518,6 @@ ANDROID_OVERRIDES = {
     "dialogTextGray4": "textSub",
     "dialogTextHint": "textDim",
     "dialogIcon": "textSub",
-    "dialogRedIcon": "red",
-    "dialogTextRed": "red",
-    "dialogTextRed2": "redDim",
     "dialogInputField": "border",
     "dialogInputFieldActivated": A,
     "dialogCheckboxSquareBackground": AF,
@@ -520,14 +525,11 @@ ANDROID_OVERRIDES = {
     "dialogCheckboxSquareUnchecked": "textDim",
     "dialogRadioBackground": "textDim",
     "dialogRadioBackgroundChecked": AF,
-    "dialogProgressCircle": A,
     "dialogButton": A,
     "dialogButtonSelector": "bgRipple",
     "dialogScrollGlow": "surface",
     "dialogRoundCheckBox": AF,
     "dialogRoundCheckBoxCheck": "onAccent",
-    "dialogBadgeBackground": AF,
-    "dialogBadgeText": "onAccent",
     "dialogShadowLine": "border",
     "dialogFloatingButton": AF,
     "dialogFloatingButtonPressed": AFO,
@@ -565,7 +567,6 @@ ANDROID_OVERRIDES = {
     "profile_verifiedBackground": A,
     "profile_verifiedCheck": "bg",
     "profile_creatorIcon": A,
-    "profile_adminIcon": "textSub",
     "profile_status": "accentText",
     "profile_tabText": "textSub",
     "profile_tabSelectedText": A,
@@ -601,7 +602,6 @@ ANDROID_OVERRIDES = {
     "undo_background": ("surface2", 0xf2),
     "undo_cancelColor": A,
     "undo_infoColor": "text",
-    "player_actionBar": "surface",
     "player_actionBarItems": "text",
     "player_actionBarTitle": "text",
     "player_actionBarSubtitle": "textSub",
@@ -617,16 +617,30 @@ ANDROID_OVERRIDES = {
     "contextProgressOuter1": A,
     "calls_callReceivedGreenIcon": "green",
     "calls_callReceivedRedIcon": "red",
-    "calls_ratingStar": "textDim",
-    "calls_ratingStarSelected": "gold",
-    "premiumStartGradient1": A,
-    "premiumStartGradient2": "av3",
     "premiumGradient1": A,
     "premiumGradient2": "av2",
     "premiumGradient3": "av3",
     "premiumGradient4": "av5",
     "premiumCoinGradient1": "gold",
     "premiumCoinGradient2": "orange",
+
+    # ---- audit polish: reactions, code blocks, selected media, misc ----
+    "chat_inReactionButtonBackground": (A, 0x22),
+    "chat_inReactionButtonText": A,
+    "chat_inReactionButtonTextSelected": "onAccent",
+    "chat_outReactionButtonBackground": ("ffffff", 0x1f),
+    "chat_outReactionButtonText": "cfeae3",
+    "chat_outReactionButtonTextSelected": "outBubble",
+    "chat_inCodeBackground": ("000000", 0x33),
+    "chat_outCodeBackground": ("000000", 0x2b),
+    "chat_inFileBackgroundSelected": AFO,
+    "chat_outFileBackgroundSelected": ("ffffff", 0x33),
+    "player_progressCachedBackground": ("ffffff", 0x1f),
+    "passport_authorizeBackground": AF,
+    "passport_authorizeBackgroundSelected": AFO,
+    "passport_authorizeText": "onAccent",
+    "dialogTopBackground": "accentDeep",
+    "chat_recordedVoiceDarkerBackground": ("ffffff", 0x1f),
 }
 
 def resolve(value):
@@ -653,6 +667,17 @@ def build_android(wallpaper_jpeg_bytes):
         a, r, g, b = parse8(hex8)
         nr, ng, nb = transform(name, a, r, g, b)
         colors[name] = (nr, ng, nb, a)
+
+    # warn about any override key Telegram won't recognise (it would be ignored).
+    # Validate against the full key table (ThemeColors.java), not just the
+    # literal defaults, since many valid keys are assigned non-literally.
+    keylist = os.path.join(BASE, "android_keys.txt")
+    valid = set(open(keylist).read().split()) if os.path.exists(keylist) else set(defaults)
+    valid |= {"wallpaperFileOffset"}
+    unknown = [k for k in ANDROID_OVERRIDES if k not in valid]
+    if unknown:
+        print(f"  ! {len(unknown)} override keys not in the base key table "
+              f"(check spelling): {', '.join(unknown)}")
 
     overridden = 0
     for name, value in ANDROID_OVERRIDES.items():
