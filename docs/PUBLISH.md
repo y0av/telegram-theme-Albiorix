@@ -1,5 +1,7 @@
 # Publishing Albiorix as a `t.me/addtheme/Albiorix` cloud theme
 
+> ℹ️ The official Albiorix cloud theme is already live at **[t.me/addtheme/Albiorix](https://t.me/addtheme/Albiorix)** — just open it to install. This guide is for **forking it under your own slug, adding pixel-perfect per-platform variants, or changing the wallpaper.**
+
 Telegram has two ways to use a theme:
 
 1. **A theme file** you import on one device (`.tdesktop-theme` on Desktop, `.attheme` on Android). Fast, but per-device and doesn't auto-update.

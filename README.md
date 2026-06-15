@@ -8,7 +8,11 @@
 
 Sleek · high-contrast · cohesive across **iOS · Android · Desktop**
 
-[Install](#-install) · [Get the shareable link](#-get-a-shareable-link-tmeaddtheme) · [Palette](#-palette) · [Build it yourself](#-build-it-yourself) · [yoav.xyz](https://yoav.xyz)
+### 📲 &nbsp;[**Add Albiorix to Telegram → t.me/addtheme/Albiorix**](https://t.me/addtheme/Albiorix)
+
+**One tap — installs on iOS, Android & Desktop.**
+
+[Manual install](#-install) · [Palette](#-palette) · [Build it yourself](#-build-it-yourself) · [yoav.xyz](https://yoav.xyz)
 
 </div>
 
@@ -38,7 +42,7 @@ Design principles:
 
 ## ✦ Install
 
-Pick your platform. For a single link that works on **all** of them, see [the next section](#-get-a-shareable-link-tmeaddtheme).
+**Easiest — any platform:** open **[t.me/addtheme/Albiorix](https://t.me/addtheme/Albiorix)** in Telegram and tap to apply. One cloud theme, syncs across your devices, and updates automatically. The manual per-platform files below are for offline install or tweaking.
 
 ### Desktop (Windows · macOS · Linux)
 1. Download **[`desktop/Albiorix.tdesktop-theme`](desktop/Albiorix.tdesktop-theme)**.
@@ -50,20 +54,13 @@ Pick your platform. For a single link that works on **all** of them, see [the ne
 2. Tap the file → a theme preview opens → tap **Apply**. *(The cosmic wallpaper is bundled inside the file.)*
 
 ### iOS
-iOS installs themes from a cloud link rather than a file. Either:
-- Open your published **`t.me/addtheme/Albiorix`** link (see below), **or**
-- Recreate it in **Settings → Appearance → Create New Theme** using the [palette](#-palette): Accent `#35d6be`, a dark background, message tint `#0f564e`. Set the wallpaper to [`assets/wallpaper.jpg`](assets/wallpaper.jpg).
+iOS installs themes from a cloud link, not a file (there's no hand-editable iOS theme-file format). So on iPhone/iPad just open **[t.me/addtheme/Albiorix](https://t.me/addtheme/Albiorix)** and tap to apply. To build it natively in the in-app editor instead, see **[`ios/README.md`](ios/README.md)** for the color recipe.
 
-## ✦ Get a shareable link (`t.me/addtheme/…`)
+## ✦ The cloud link
 
-A Telegram **cloud theme** has one link that installs on iOS, Android and Desktop — and auto-updates for everyone when you edit it. Minting the link requires *your* Telegram account, so you do this once; everything you need is already in this repo.
+**[t.me/addtheme/Albiorix](https://t.me/addtheme/Albiorix)** is live — one link that installs on iOS, Android and Desktop, syncs across your devices, and auto-updates whenever the theme is edited.
 
-**Quick path (Android → link):**
-1. Apply `Albiorix.attheme` on Android (steps above).
-2. **Settings → Chat Settings**, find the **Albiorix** theme, open its menu → **Create link / Share**.
-3. When prompted for a short name, enter **`Albiorix`** (or a free alternative if taken). Telegram sends you **`https://t.me/addtheme/Albiorix`**.
-
-That link already works on iOS and Desktop. For pixel-perfect per-platform variants under the *same* link (recommended), follow **[docs/PUBLISH.md](docs/PUBLISH.md)** — it covers the in-app and web-editor routes, shortname rules, and the iOS color recipe in full.
+Want to fork it under your own slug, attach pixel-perfect per-platform variants, or change the wallpaper? **[docs/PUBLISH.md](docs/PUBLISH.md)** covers the in-app and web-editor routes, shortname rules, and the iOS color recipe in full.
 
 ## ✦ Palette
 
@@ -88,7 +85,9 @@ Albiorix/
 │   ├── Albiorix.tdesktop-theme   ← install this (zip: palette + wallpaper)
 │   └── colors.tdesktop-theme     ← the readable Desktop palette (467 keys)
 ├── android/
-│   └── Albiorix.attheme          ← install this (793 keys + embedded wallpaper)
+│   └── Albiorix.attheme          ← install this (769 keys + embedded wallpaper)
+├── ios/
+│   └── README.md                 ← install via the cloud link + in-app recipe
 ├── assets/
 │   ├── wallpaper.png / .jpg      ← cosmic chat background
 │   ├── cover.png · icon.png      ← branding
